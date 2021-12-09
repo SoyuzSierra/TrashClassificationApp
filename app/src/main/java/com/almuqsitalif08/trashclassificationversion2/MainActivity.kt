@@ -1,12 +1,16 @@
 package com.almuqsitalif08.trashclassificationversion2
 
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
 import com.almuqsitalif08.trashclassificationversion2.ml.Model
@@ -30,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         val selectButton = findViewById<Button>(R.id.button)
         val predictButon = findViewById<Button>(R.id.button2)
         val showPredict = findViewById<TextView>(R.id.textView)
+        val camera = findViewById<Button>(R.id.camerabtn)
 
         bitmap = imageView.drawable.toBitmap()
 
@@ -57,15 +62,25 @@ class MainActivity : AppCompatActivity() {
             showPredict.text = showOutput(outputFeature0.floatArray, label)
             model.close()
         }
+
+        camera.setOnClickListener {
+            checkandGetpermissions()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if(data != null){
-            val uri = data.data
-            imageView.setImageURI(uri)
-            bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,  uri)
+            if (requestCode == 100){
+                val uri = data.data
+                imageView.setImageURI(uri)
+                bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,  uri)
+            } else if (requestCode == 101 && resultCode == Activity.RESULT_OK){
+                bitmap = data.extras?.get("data") as Bitmap
+                bitmap = bitmap.copy(Bitmap.Config.ARGB_8888,true)
+                imageView.setImageBitmap(bitmap)
+            }
         }
     }
 
@@ -81,5 +96,42 @@ class MainActivity : AppCompatActivity() {
         }
 
         return listString[index].capitalize() + " " + (maxValue * 100).toInt().toString() + "%"
+    }
+
+    private fun checkandGetpermissions(){
+        if(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED
+            } else {
+                false
+            }
+        ){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 200)
+            }
+        }
+        else{
+            Toast.makeText(this, "Camera permission granted", Toast.LENGTH_SHORT).show()
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            startActivityForResult(intent, 101)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 200){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(this, "Camera permission granted", Toast.LENGTH_SHORT).show()
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                startActivityForResult(intent, 101)
+            }
+            else{
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

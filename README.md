@@ -14,5 +14,5 @@ Berikut adalah contoh hasil aplikasi yang telah dijalankan.
       
       
 ### Sedang dikembangkan
-1. Fungsi Camera
+1. Fungsi Camera (**selesai**)
 2. Realtime Classification

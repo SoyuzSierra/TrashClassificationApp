@@ -16,4 +16,4 @@ Berikut adalah contoh hasil aplikasi yang telah dijalankan.
 ### Sedang dikembangkan
 1. Fungsi Camera (**selesai**)
 2. Realtime Classification
-3. Prediction to Speech
+3. Result to Speech
